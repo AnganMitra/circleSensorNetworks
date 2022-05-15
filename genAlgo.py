@@ -1,21 +1,16 @@
+from glob import glob
 import matplotlib.pyplot as plt
 import random as rnd
 import numpy as np
 import math
 
 
-circle = int(input('No of circles : '))#3  # int(random.randint(1, 5))
-population_size = int(input('Population size : '))#5  # int(random.randint(1, 10))
+circle = 8 # int(input('No of circles : '))#3  # int(random.randint(1, 5))
+population_size = 60 # int(input('Population size : '))#5  # int(random.randint(1, 10))
 # rounds = int(input('Roxunds : '))#5  # int(random.randint(1, 10))
-
-#circle = 3
-#population_size = 8
-
-
 
 x_max = 100
 y_max = 100
-
 
 def distance(c1, c2):
     return math.sqrt( (c1[0] - c2[0])**2 + (c1[1] - c2[1])**2 )
@@ -37,17 +32,39 @@ def generateScoresPerChromosome(chromosomeSet):
     if (len(chromosomeSet)==1) : chromosomeSet = chromosomeSet[0]
     return chromosomeSet
 
+def moveX(circleConfig):
+    global x_max
+    radius = circleConfig[-1]
+    x = circleConfig[-1]
+
+    if (x-radius) <= 0: x += radius
+    elif (x+radius) > x_max: x -= radius
+
+    return x
+
+def moveY(circleConfig):
+
+    global y_max
+    radius = circleConfig[-1]
+    y = circleConfig[1]
+
+    if (y-radius) <= 0: y += radius
+    elif (y+radius) > x_max: y -= radius
+
+    return y
+
 
 def mutate(circleNetwork1, circleNetwork2):
     mutatChoice = np.random.random()
     if mutatChoice != 0:
         for i in range(circle):
 
-            circleNetwork1[i][0] += 0.01*x_max
-            circleNetwork1[i][1] += 0.01*y_max
+            circleNetwork1[i][0] = moveX(circleNetwork1[i])
+            circleNetwork1[i][1] = moveY(circleNetwork1[i])
 
-            circleNetwork2[i][0] -= 0.01*x_max
-            circleNetwork2[i][1] -= 0.01*y_max
+            circleNetwork2[i][0] = moveX(circleNetwork2[i])
+            circleNetwork2[i][1] = moveY(circleNetwork2[i])
+
 
     return circleNetwork1, circleNetwork2
 
@@ -69,11 +86,19 @@ def crossoverMutation(population):
                 circleNetwork2.append(parent1[k])
 
             circleNetwork1, circleNetwork2 = mutate(circleNetwork1, circleNetwork2)
-            circleNetwork1 = generateScoresPerChromosome(circleNetwork1)
-            circleNetwork2 = generateScoresPerChromosome(circleNetwork2)
+            
 
-            population.append(circleNetwork2)
-            population.append(circleNetwork1)
+            if validateRadialProperty(circleNetwork1):
+                if validateBoundaryCondition(circleNetwork1):
+                    circleNetwork1 = generateScoresPerChromosome(circleNetwork1)
+                    population.append(circleNetwork1)
+
+
+            if validateRadialProperty(circleNetwork2):
+                if validateBoundaryCondition(circleNetwork2):
+                    circleNetwork2 = generateScoresPerChromosome(circleNetwork2)
+                    population.append(circleNetwork2)
+            
             # print ("O1" , circleNetwork1)
             # print ("O2" , circleNetwork2)
     return population
@@ -103,18 +128,18 @@ def fibonacciRadius(n):
         return b
  
 
-def apProgession(n, delta = 1.5, start = 2):
+def apProgession(n, delta = 2, start = 1):
     return start + n*delta
 
 
-def gpProgession(n, delta = 1.5, start = 2):
+def gpProgession(n, delta = 2, start = 1):
     return start*(delta**n)
 
 def validateRadialProperty(chromosome):
     invalidFlag = False
-    
+
     for index, i in enumerate(chromosome):
-        if len (i) == 0: continue
+        if len (i) == 1: continue
         for j in chromosome[index+1:]:
             if len(j) == 0: continue
             circleCenterDistance =  distance(i,j) 
@@ -126,7 +151,19 @@ def validateRadialProperty(chromosome):
             
     return invalidFlag
 
+def validateBoundaryCondition(chromosome):
+    validTag = True
+    for i in chromosome:
+        if len(i) == 1: continue
+        if (i[0] < x_max and i[1] < y_max) and (i[0] > 0 and i[1] > 0) :
+            validTag = True
+        else:
+            validTag= False
+            break
     
+    return validTag
+
+
 
 
 def initiateRandRop(mode = 'random'):
