@@ -5,12 +5,13 @@ import numpy as np
 import math
 
 
-circle = 8 # int(input('No of circles : '))#3  # int(random.randint(1, 5))
-population_size = 60 # int(input('Population size : '))#5  # int(random.randint(1, 10))
-# rounds = int(input('Roxunds : '))#5  # int(random.randint(1, 10))
+circle = 8 # int(input('No of circles : '))
+population_size = 60 
 
-x_max = 100
-y_max = 100
+x_min=y_min=0
+
+x_max = None
+y_max = None
 
 def distance(c1, c2):
     return math.sqrt( (c1[0] - c2[0])**2 + (c1[1] - c2[1])**2 )
@@ -106,18 +107,11 @@ def crossoverMutation(population):
 def fibonacciRadius(n):
     a = 0
     b = 1
-     
-    # Check is n is less
-    # than 0
+
     if n < 0:
         print("Incorrect input")
-         
-    # Check is n is equal
-    # to 0
     elif n == 0:
         return 0
-       
-    # Check if n is equal to 1
     elif n == 1:
         return b
     else:
@@ -163,24 +157,40 @@ def validateBoundaryCondition(chromosome):
     
     return validTag
 
+def generateBoundaries(method='random'):
+    global circle, x_max, y_max
+    limit = None
+
+    if method == 'random':
+        radiusMax = 7
+        limit = sum([radiusMax for i in range(0, circle)])
+
+    if method == 'gp':
+        limit = sum([gpProgession(i) for i in range(0, circle)])
+
+    if method == 'fibonacci':
+        limit = sum([fibonacciRadius(i) for i in range(0, circle)])
+
+    x_max = y_max = limit
 
 
 
 def initiateRandRop(mode = 'random'):
     population = []  # the 2d array
+    global x_max, y_max
     for co in range(0, population_size):
         circle_network = []
         for i in range(0, circle):
-            x = int(np.random.randint(1, x_max - 5))
-            y = int(np.random.randint(1, y_max - 5))
+            
             if mode == 'random':
-                r = int(np.random.randint(x_max / 100, x_max / 1))  # random radius
+                r = np.random.randint(1, 7)  # random radius
             elif mode == 'fibonacci':
-                r = fibonacciRadius(co) % x_max  # fibonacci radius
-            elif mode == 'ap':
-                r = apProgession(co) % x_max  # arithmetic progession
+                r = fibonacciRadius(co)  # fibonacci radius
             elif mode == 'gp':
-                r = gpProgession(co) % x_max  # geometric progession
+                r = gpProgession(co)  # geometric progession
+
+            x = int(np.random.randint(r+1, x_max - r-1))
+            y = int(np.random.randint(r+1, y_max - r-1))
 
             l = [x, y, r]
             circle_network.append(l)
@@ -189,15 +199,13 @@ def initiateRandRop(mode = 'random'):
     return population
 
 
-radiusOptions = ['random', 'fibonacci', 'ap', 'gp']
+radiusOptions = ['random', 'fibonacci', 'gp']
 roundsIterate = range(50,500,50)
 
-population = initiateRandRop('random')
-population = initiateRandRop('fibonacci')
-population = initiateRandRop('ap')
-population = initiateRandRop('gp')
 
 for radiusInit in radiusOptions:
+    generateBoundaries(radiusInit)
+    population = initiateRandRop(radiusInit)
     for rounds in roundsIterate: 
 
         population = generateScoresPerChromosome(population)
@@ -216,14 +224,5 @@ for radiusInit in radiusOptions:
 
         print (f'{radiusInit} - iterations {rounds} done...')
 
-        open(f'{radiusInit} - iterations {rounds}.txt', 'w').write(str(bestConfig))
+        open(f'./output/{radiusInit} - iterations {rounds}.txt', 'w').write(str(bestConfig))
 
-
-
-'''
-TODO : Plot Graphs with circles
-    Increase rounds
-    at which specific rounds, best score
-    x axis (number of rounds ) y axis (distance)
-
-'''
