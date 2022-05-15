@@ -122,10 +122,6 @@ def fibonacciRadius(n):
         return b
  
 
-def apProgession(n, delta = 2, start = 1):
-    return start + n*delta
-
-
 def gpProgession(n, delta = 2, start = 1):
     return start*(delta**n)
 
@@ -171,23 +167,22 @@ def generateBoundaries(method='random'):
     if method == 'fibonacci':
         limit = sum([fibonacciRadius(i) for i in range(0, circle)])
 
-    x_max = y_max = limit
+    x_max = y_max = 2 * limit
 
 
 
 def initiateRandRop(mode = 'random'):
     population = []  # the 2d array
     global x_max, y_max
-    for co in range(0, population_size):
+    for _ in range(0, population_size):
         circle_network = []
         for i in range(0, circle):
-            
             if mode == 'random':
                 r = np.random.randint(1, 7)  # random radius
             elif mode == 'fibonacci':
-                r = fibonacciRadius(co)  # fibonacci radius
+                r = fibonacciRadius(i)  # fibonacci radius
             elif mode == 'gp':
-                r = gpProgession(co)  # geometric progession
+                r = gpProgession(i)  # geometric progession
 
             x = int(np.random.randint(r+1, x_max - r-1))
             y = int(np.random.randint(r+1, y_max - r-1))
