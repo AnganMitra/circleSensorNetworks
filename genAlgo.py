@@ -43,8 +43,10 @@ def moveX(circleConfig):
     radius = circleConfig[-1]
     x = circleConfig[-1]
 
-    if (x-radius) <= 0: x += radius
-    elif (x+radius) > x_max: x -= radius
+    if (x-radius) <= 0: x += radius # check for left extreme
+    elif (x+radius) > x_max: x -= radius # check for right extreme
+    else:
+        x += (-1)**rnd.randint(0,9) *0.5*radius
 
     return x
 
@@ -56,6 +58,8 @@ def moveY(circleConfig):
 
     if (y-radius) <= 0: y += radius
     elif (y+radius) > x_max: y -= radius
+    else:
+        y += (-1)**rnd.randint(0,9) *0.5*radius
 
     return y
 
@@ -203,12 +207,13 @@ for radiusInit in radiusOptions:
         maxFitness = max(topFitness)
         bestConfig =  population[topFitness.index(maxFitness)]
         performanceDictionary[radiusInit].append(bestConfig[-1])
-        # print (f'{radiusInit} - iterations {rounds} done...', str(bestConfig))
+        print (f'{radiusInit} - iterations {rounds} done...', str(bestConfig))
         # open(f'./output/{radiusInit} - iterations {rounds}.txt', 'w').write(str(bestConfig))
 
 perfDict = pd.DataFrame(performanceDictionary)
-perfDict['rounds'] = roundsIterate
+perfDict.index= roundsIterate
 
-perfDict.index = perfDict.rounds
 perfDict.plot()
+plt.xlabel('Rounds')
+plt.ylabel('Fitness')
 plt.savefig('dump.png')
