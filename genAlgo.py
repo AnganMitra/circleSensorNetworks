@@ -3,7 +3,8 @@ import matplotlib.pyplot as plt
 import random as rnd
 import numpy as np
 import math
-
+from scipy.constants import golden as phi
+import pandas as pd
 
 circle = 8 # int(input('No of circles : '))
 population_size = 60 
@@ -12,6 +13,10 @@ x_min=y_min=0
 
 x_max = None
 y_max = None
+
+radiusOptions = ['random', 'fibonacci', 'gp']
+roundsIterate = range(50,500,50)
+
 
 def distance(c1, c2):
     return math.sqrt( (c1[0] - c2[0])**2 + (c1[1] - c2[1])**2 )
@@ -53,7 +58,6 @@ def moveY(circleConfig):
     elif (y+radius) > x_max: y -= radius
 
     return y
-
 
 def mutate(circleNetwork1, circleNetwork2):
     mutatChoice = np.random.random()
@@ -105,22 +109,9 @@ def crossoverMutation(population):
     return population
 
 def fibonacciRadius(n):
-    a = 0
-    b = 1
-
-    if n < 0:
-        print("Incorrect input")
-    elif n == 0:
-        return 0
-    elif n == 1:
-        return b
-    else:
-        for i in range(1, n):
-            c = a + b
-            a = b
-            b = c
-        return b
- 
+    radius = phi**n - (-phi)**(-n)
+    radius /= 5**0.5
+    return np.round(radius,3)
 
 def gpProgession(n, delta = 2, start = 1):
     return start*(delta**n)
@@ -169,8 +160,6 @@ def generateBoundaries(method='random'):
 
     x_max = y_max = 2 * limit
 
-
-
 def initiateRandRop(mode = 'random'):
     population = []  # the 2d array
     global x_max, y_max
@@ -193,16 +182,13 @@ def initiateRandRop(mode = 'random'):
     
     return population
 
-
-radiusOptions = ['random', 'fibonacci', 'gp']
-roundsIterate = range(50,500,50)
-
+performanceDictionary = {}
 
 for radiusInit in radiusOptions:
     generateBoundaries(radiusInit)
-    population = initiateRandRop(radiusInit)
+    performanceDictionary[radiusInit] = []
     for rounds in roundsIterate: 
-
+        population = initiateRandRop(radiusInit)
         population = generateScoresPerChromosome(population)
         population = sorted(population, key=lambda x: x[-1], reverse=False)
         topFitness = []
@@ -216,8 +202,13 @@ for radiusInit in radiusOptions:
 
         maxFitness = max(topFitness)
         bestConfig =  population[topFitness.index(maxFitness)]
+        performanceDictionary[radiusInit].append(bestConfig[-1])
+        # print (f'{radiusInit} - iterations {rounds} done...', str(bestConfig))
+        # open(f'./output/{radiusInit} - iterations {rounds}.txt', 'w').write(str(bestConfig))
 
-        print (f'{radiusInit} - iterations {rounds} done...')
+perfDict = pd.DataFrame(performanceDictionary)
+perfDict['rounds'] = roundsIterate
 
-        open(f'./output/{radiusInit} - iterations {rounds}.txt', 'w').write(str(bestConfig))
-
+perfDict.index = perfDict.rounds
+perfDict.plot()
+plt.savefig('dump.png')
