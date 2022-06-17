@@ -171,7 +171,7 @@ def initiateRandRop(mode = 'random'):
         circle_network = []
         for i in range(0, circle):
             if mode == 'random':
-                r = np.random.randint(1, 7)  # random radius
+                r = np.random.randint(1, int(x_max/circle))  # random radius
             elif mode == 'fibonacci':
                 r = fibonacciRadius(i)  # fibonacci radius
             elif mode == 'gp':
@@ -204,7 +204,7 @@ for radiusInit in radiusOptions:
             # for x in population: print(x)
             topFitness.append(population[0][-1])
 
-        maxFitness = max(topFitness)
+        maxFitness = min(topFitness)
         bestConfig =  population[topFitness.index(maxFitness)]
         performanceDictionary[radiusInit].append(bestConfig[-1])
         print (f'{radiusInit} - iterations {rounds} done...', str(bestConfig))
