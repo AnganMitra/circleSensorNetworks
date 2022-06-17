@@ -7,7 +7,7 @@ from scipy.constants import golden as phi
 import pandas as pd
 
 circle = 8 # int(input('No of circles : '))
-population_size = 60 
+population_size = 50
 
 x_min=y_min=0
 
@@ -46,7 +46,7 @@ def moveX(circleConfig):
     if (x-radius) <= 0: x += radius # check for left extreme
     elif (x+radius) > x_max: x -= radius # check for right extreme
     else:
-        x += (-1)**rnd.randint(0,9) *0.5*radius
+        x += (-1)**rnd.randint(0,9) *5#0.5*radius
 
     return x
 
@@ -59,7 +59,7 @@ def moveY(circleConfig):
     if (y-radius) <= 0: y += radius
     elif (y+radius) > x_max: y -= radius
     else:
-        y += (-1)**rnd.randint(0,9) *0.5*radius
+        y += (-1)**rnd.randint(0,9) *5
 
     return y
 
@@ -113,11 +113,12 @@ def crossoverMutation(population):
     return population
 
 def fibonacciRadius(n):
+    n = n+1
     radius = phi**n - (-phi)**(-n)
     radius /= 5**0.5
     return np.round(radius,3)
 
-def gpProgession(n, delta = 2, start = 1):
+def gpProgession(n, delta = 2, start = 2):
     return start*(delta**n)
 
 def validateRadialProperty(chromosome):
@@ -199,13 +200,17 @@ for radiusInit in radiusOptions:
         for round in range(rounds):
             population = crossoverMutation(population)
             population = sorted(population, key=lambda x: x[-1], reverse=False)
-            population = population[:population_size]
+            #population = population[:population_size]
             # print (f"===========================R{round+1}=====================================")
             # for x in population: print(x)
             topFitness.append(population[0][-1])
+        try:
+                
+            #maxFitness = min(topFitness)
+            bestConfig =  population[topFitness.index(min(topFitness))]
 
-        maxFitness = min(topFitness)
-        bestConfig =  population[topFitness.index(maxFitness)]
+        except:
+            import pdb; pdb.set_trace()
         performanceDictionary[radiusInit].append(bestConfig[-1])
         print (f'{radiusInit} - iterations {rounds} done...', str(bestConfig))
         # open(f'./output/{radiusInit} - iterations {rounds}.txt', 'w').write(str(bestConfig))
